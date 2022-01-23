@@ -24,25 +24,94 @@ typedef unsigned int socketlengthint; // If errors check here.
 
 #endif
 
-#define BUFFER_LIMITATION 65536
+FILE* Global_page_index;
+
+#define BASE_FILE_LIMITATION 1024
+#define STATIC_FILE_COUNT_LIMIT 16
+#define CACHE_LIMITATION (BASE_FILE_LIMITATION * STATIC_FILE_COUNT_LIMIT)
+#define PAYLOAD_LIMITATION (CACHE_LIMITATION - BASE_FILE_LIMITATION)
 
 void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres);
+void print_file(FILE* file);
+char* generate_an_array_by_limitation(int limitation);
+void assign_header_by_limitation(int ceilingLimitation, int headerLimitation, char* block);
+void display_cached_block(char* cachedBlock);
+
+FILE* read_file_path(const char* path)
+{
+
+    FILE* index_html = fopen(path, "r");
+
+    if (index_html == NULL)
+    {
+        perror("File not found!");
+    }
+
+    else
+    {
+        print_file(index_html);
+        printf("\n\n\n\n");
+    }
+
+    return index_html;
+}
+
+void print_file(FILE* file)
+{
+
+    rewind(file);
+
+    int _char;
+    do
+    {
+        if (_char == EOF) break;
+        _char = getc(file);
+        putchar(_char);
+    } while (_char != EOF);
+    printf("\n");
+}
+
+char protocol_header_http[] = 
+                            "HTTP/1.1 200 OK\r\n\n"
+                            "Content-Type: text/html; charset=UTF-8\r\n\r\n";
 
 int main()
 {
+
     /* This turns off stdout/printing buffers */
     setbuf(stdout, NULL);
 
+    printf("################\n");
+    printf("Base file limitation: %i\n", BASE_FILE_LIMITATION);
+    printf("Cache limitation: %i\n", CACHE_LIMITATION);
+    printf("Payload limitation: %i\n", PAYLOAD_LIMITATION);
+    printf("################\n\n\n\n");
+
+    /* If the build environment is Windows, the Windows socket library initialization step is required. */
     #if defined(_WIN32)
-    
-        /* If the build environment is Windows, the Windows socket library initialization step is required. */
-    
+        
         WSADATA winsock_data;
         if (WSAStartup(MAKEWORD(2, 2), &winsock_data)) {
             fprintf(stderr, "Winsock startup failed.\n");
         }
     
     #endif
+
+    Global_page_index = read_file_path("/root/env/internet_server/index.html");
+    if (Global_page_index == NULL) printf("File read_file_path error");
+
+    char* staticIndex = generate_an_array_by_limitation(CACHE_LIMITATION);
+
+    int header_limitation = sizeof(protocol_header_http);
+
+    assign_header_by_limitation(CACHE_LIMITATION, header_limitation, staticIndex);
+    display_cached_block(staticIndex);
+
+    /*
+
+        End of initialization settings
+
+    */
 
     int address_family = AF_INET;
     int type = SOCK_STREAM;
@@ -107,51 +176,91 @@ int main()
 
     allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_addres);
 
+    /*
+        This is the end of the software process
+
+    */
+
     printf("This is the end of the socket_tcp.c software process\n");
 
     return 0;
 }
 
-void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres)
+
+
+
+void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transportAddress)
 {
-    char client_is_allowed = 1;
+
+    char clientIsAllowed = 1;
 
     printf("Started the allow socket method.\n");
 
-    while (client_is_allowed == 1)
+    while (clientIsAllowed == 1)
     {
 
-        printf("This server is looping and waiting for a request on port number %i.\n", transport_addres);
+        printf("This server is looping and waiting for a request on port number %i.\n", transportAddress);
 
         int client_connection_address = accept(socketFileDescriptor, (struct sockaddr*) &socketAddressBlock, (socketlengthint*) &socketAddressBlockLength);
 
         if (client_connection_address >= 0)
         {
-            printf("A client has made a request!");
+            printf("A client has made a request!\n");
         }
         else
         {
-            perror("The socket experienced a failure during instantiation of the accepted connection address.");
+            perror("The socket experienced a failure during instantiation of the accepted connection address.\n");
             exit(EXIT_FAILURE);
         }
 
-        char request_retainer[BUFFER_LIMITATION] = {0};
-        read(client_connection_address, request_retainer, BUFFER_LIMITATION);
-        printf("%s\n", request_retainer);
-        char initializer[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=UTF-8\r\n\r\n"
-        "<!DOCTYPE html>\r\n"
-        "<html><head><title>World Wide Web</title>\r\n"
-        "<p>Hello internet</p></html>\r\n";
-        write(client_connection_address, initializer, sizeof(initializer));
-        printf("Wrote the response.\n\n\n");
-        close(client_connection_address);
+        // char request_retainer[CACHE_LIMITATION] = {0};
+        // read(client_connection_address, request_retainer, CACHE_LIMITATION);
+        // printf("%s\n", request_retainer);
+        // write(client_connection_address, initializer, sizeof(initializer));
+        // printf("Wrote the response.\n\n\n");
+        // close(client_connection_address);
     }
 }
 
 
 
+
+char* generate_an_array_by_limitation(int limitation)
+{
+
+    char* array = malloc(limitation*sizeof(char));
+
+    for (int iteration = 0; iteration < limitation; iteration++)
+    {
+        array[iteration] = '1';
+    }
+
+    return array;
+}
+
+void assign_header_by_limitation(int cacheLimitation, int endOfHeader, char* block)
+{
+
+    for (int iteration = 0; iteration < cacheLimitation; iteration++)
+    {
+        block[iteration] = '0';
+
+        if (iteration < endOfHeader)
+        {
+            block[iteration] = protocol_header_http[iteration];
+        }
+    }
+}
+
+void display_cached_block(char* cachedBlock)
+{
+
+    for (int iteration = 0; iteration < CACHE_LIMITATION; iteration++)
+    {
+        putchar(cachedBlock[iteration]);
+    }
+    putchar('\n');
+}
 
 /* Notes:
 
