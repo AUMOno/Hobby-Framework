@@ -200,9 +200,9 @@ struct sockaddr_in
     char              sin_zero[8]; 
 };
 
-----------------------
+------------------------
 - write/send structure -
-----------------------
+------------------------
 
 Since everything is being built as byte pointers, sizeof is useless. Remember to us the defines:
 
