@@ -1,79 +1,39 @@
 //// Copyright 2021, Eric Dee - All rights reserved
-//// socket_tcp.c
+//// socket_tcp.c, cacher.c
 ////
 ////
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h> // Replace this with the printf function I rewrote.
-typedef unsigned int socketlengthint; // If errors check here.
-
-/* This Checks the OS, then defines types/delegates per their specification
-*  There are differences between the systems that I haven't coded yet. */
-
-#if defined (__unix__)
-    typedef int socketint;
-    #include <sys/socket.h>
-    #include <unistd.h>
-    #include <netinet/in.h>
-
-#elif defined(_WIN32)
-    typedef unsigned int socketint;
-    #include <winsock.h>
-    #include <winsock2.h>
-
+#ifndef IO_LIBRAIRES_H
+#include "headers/io_libraries.h"
+#define IO_LIBRAIRES_H
 #endif
 
-FILE* Global_page_index;
+#ifndef SOCKET_LIBRARIES_H
+#include "headers/socket_libraries.h"
+#define SOCKET_LIBRARIES_H
+#endif
 
-#define BASE_FILE_LIMITATION 1024
-#define STATIC_FILE_COUNT_LIMIT 16
-#define CACHE_LIMITATION (BASE_FILE_LIMITATION * STATIC_FILE_COUNT_LIMIT)
-#define PAYLOAD_LIMITATION (CACHE_LIMITATION - BASE_FILE_LIMITATION)
+#include "cache_manager.c"
+#include "file_manager.c"
 
-void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres);
+typedef unsigned int socketlengthint; // If errors check here.
+
+FILE* Global_HTMLIndexFile;
+
+FILE* read_file_path(const char* path, char print);
 void print_file(FILE* file);
-char* generate_an_array_by_limitation(int limitation);
-void assign_header_by_limitation(int ceilingLimitation, int headerLimitation, char* block);
+void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres);
 void display_cached_block(char* cachedBlock);
+char* collect_file(FILE* fileToCollect, void* insert, char* cachedHTMLIndex);
+char* collect_file_from_offset(FILE* fileToCollect, char* base_file, int start_point);
 
-FILE* read_file_path(const char* path)
-{
-
-    FILE* index_html = fopen(path, "r");
-
-    if (index_html == NULL)
-    {
-        perror("File not found!");
-    }
-
-    else
-    {
-        print_file(index_html);
-        printf("\n\n\n\n");
-    }
-
-    return index_html;
-}
-
-void print_file(FILE* file)
-{
-
-    rewind(file);
-
-    int _char;
-    do
-    {
-        if (_char == EOF) break;
-        _char = getc(file);
-        putchar(_char);
-    } while (_char != EOF);
-    printf("\n");
-}
-
-char protocol_header_http[] = 
-                            "HTTP/1.1 200 OK\r\n\n"
+char http_protocol_header[] =
+                            "HTTP/1.1 200 OK\r\n"
                             "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+#define HTTP_HEADER_LIMITATION sizeof(http_protocol_header)
+
+struct CacheManager StaticCache;
+struct FileManager FileManager;
 
 int main()
 {
@@ -97,15 +57,13 @@ int main()
     
     #endif
 
-    Global_page_index = read_file_path("/root/env/internet_server/index.html");
-    if (Global_page_index == NULL) printf("File read_file_path error");
+    Global_HTMLIndexFile = read_file_path("/root/env/internet_server/index.html", 'n');
+    if (Global_HTMLIndexFile == NULL) printf("File read_file_path error");
 
-    char* staticIndex = generate_an_array_by_limitation(CACHE_LIMITATION);
+    assemble_cacher(&StaticCache);
 
-    int header_limitation = sizeof(protocol_header_http);
-
-    assign_header_by_limitation(CACHE_LIMITATION, header_limitation, staticIndex);
-    display_cached_block(staticIndex);
+    StaticCache.assign_header_by_limitation(BASE_FILE_LIMITATION, HTTP_HEADER_LIMITATION, http_protocol_header, StaticCache.material_cachedHTTPHeader, (any)0);
+    StaticCache.assign_response_by_limitation_offset(CACHE_LIMITATION, BASE_FILE_LIMITATION, StaticCache.material_cachedHTTPHeader, StaticCache.built_cachedHTMLIndexResponse, collect_file(Global_HTMLIndexFile, (any)0, StaticCache.material_cachedHTMLIndex));
 
     /*
 
@@ -139,12 +97,12 @@ int main()
 
     struct sockaddr_in socket_address_block;
     int socket_address_block_length = sizeof(socket_address_block);
-    u_short transport_addres = 256; // Port
+    u_short transport_address = 256; // Port
 
-    memset((char*)&socket_address_block.sin_zero, 0, sizeof socket_address_block.sin_zero); // This pads the remainder of the block with bytes.
+    memset((char*)&socket_address_block.sin_zero, 0, sizeof socket_address_block.sin_zero); // This pads the entire block with bytes.
     socket_address_block.sin_family = address_family;
     socket_address_block.sin_addr.s_addr = htonl(INADDR_ANY); // 0.0.0.0 (Let the OS define)
-    socket_address_block.sin_port = htons(transport_addres);
+    socket_address_block.sin_port = htons(transport_address);
 
     int binding_result = bind(socket_file_descriptor, (struct sockaddr*) &socket_address_block, sizeof(socket_address_block));
 
@@ -174,7 +132,7 @@ int main()
 
     */
 
-    allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_addres);
+    allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_address);
 
     /*
         This is the end of the software process
@@ -185,9 +143,6 @@ int main()
 
     return 0;
 }
-
-
-
 
 void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transportAddress)
 {
@@ -213,53 +168,13 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
             exit(EXIT_FAILURE);
         }
 
-        // char request_retainer[CACHE_LIMITATION] = {0};
-        // read(client_connection_address, request_retainer, CACHE_LIMITATION);
-        // printf("%s\n", request_retainer);
-        // write(client_connection_address, initializer, sizeof(initializer));
-        // printf("Wrote the response.\n\n\n");
-        // close(client_connection_address);
+        char request_retainer[CACHE_LIMITATION] = {0};
+        read(client_connection_address, request_retainer, CACHE_LIMITATION);
+        printf("%s\n", request_retainer);
+        send(client_connection_address, StaticCache.built_cachedHTMLIndexResponse, CACHE_LIMITATION, 0);
+        printf("Sent the response to the client connection.\n\n\n");
+        close(client_connection_address);
     }
-}
-
-
-
-
-char* generate_an_array_by_limitation(int limitation)
-{
-
-    char* array = malloc(limitation*sizeof(char));
-
-    for (int iteration = 0; iteration < limitation; iteration++)
-    {
-        array[iteration] = '1';
-    }
-
-    return array;
-}
-
-void assign_header_by_limitation(int cacheLimitation, int endOfHeader, char* block)
-{
-
-    for (int iteration = 0; iteration < cacheLimitation; iteration++)
-    {
-        block[iteration] = '0';
-
-        if (iteration < endOfHeader)
-        {
-            block[iteration] = protocol_header_http[iteration];
-        }
-    }
-}
-
-void display_cached_block(char* cachedBlock)
-{
-
-    for (int iteration = 0; iteration < CACHE_LIMITATION; iteration++)
-    {
-        putchar(cachedBlock[iteration]);
-    }
-    putchar('\n');
 }
 
 /* Notes:
@@ -282,5 +197,14 @@ struct sockaddr_in
     struct in_addr    sin_addr; 
     char              sin_zero[8]; 
 };
+
+----------------------
+- write/send structure -
+----------------------
+
+Since everything is being built as byte pointers, sizeof is useless. Remember to us the defines:
+
+send(client_connection_address, http_protocol_header, sizeof(http_protocol_header), 0);
+-> send(client_connection_address, built_cachedHTMLIndexResponse, CACHE_LIMITATION, 0);
 
 */
