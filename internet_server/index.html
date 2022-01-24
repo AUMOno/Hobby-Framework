@@ -1,3 +1,10 @@
+<!-- 
+//// Copyright 2021, Eric Dee - All rights reserved
+//// index.html
+////
+////
+ -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,7 +14,256 @@
     <title>Hello internet.</title>
   </head>
   <body>
-    This is the website of Eric Dee, on a server framework that he has been
-    developing himself.
+    <div id="launch_anchor">
+      <h1>Just launch</h1>
+
+      <div class="Containter">
+        <div class="EO">
+          <p>
+            <code>
+              This is the website of Eric Dee. It's running on a server
+              framework that he has been developing himself.
+            </code>
+          </p>
+        </div>
+      </div>
+
+      <script>
+        function redirect() {
+          let url = "https://symbolicdatabase.com";
+          setTimeout(() => {
+            window.open(url, "_blank").focus();
+          }, 1777);
+        }
+      </script>
+
+      <div class="Container">
+        <label>
+          <input type="checkbox" onclick="if(this.checked){redirect()}" />
+          <div id="slider_icon">
+            <div class="Shadow"></div>
+            <div class="IconBoxArea">
+              <ion-icon name="prism-outline"></ion-icon>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div class="Container NoPadding">
+        <div class="CardHeader">
+          <h2 class="CardCenteredHeader">My works</h2>
+        </div>
+      </div>
+      <div class="Container NoPadding">
+        <div class="launch_anchor">
+          <div class="CardBody">
+            <p>
+              View this server's source code: •
+              <a
+                href="https://github.com/AllComputerScience/internet_server"
+                target="_blank"
+                >Self built internet server</a
+              >
+            </p>
+            <p>
+              Or checkout all my public repositories: •
+              <a
+                href="https://github.com/AllComputerScience?tab=repositories"
+                target="_blank"
+                >Various source files</a
+              >
+            </p>
+          </div>
+          <div class="CardBody">
+            <p>
+              Visit the
+              <a href="https://symbolicdatabase.com" target="_blank"
+                >The database of symbols</a
+              >.
+            </p>
+            <p>
+              Look at my schoolwork:
+              <a
+                href="https://ericcapstone.mybluemix.net/dealership/"
+                target="_blank"
+                >Dealership reviews capstone site</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
+    ></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-weight: 256;
+        color: rgba(1, 2, 4, 0.81);
+      }
+      .NoPadding {
+        padding: 0 !important;
+      }
+      /*  */
+      h2.CardCenteredHeader {
+        margin-top: 16px;
+        text-align: center;
+        font-weight: 625;
+      }
+      div.CardHeader {
+        position: relative;
+        min-width: 256px;
+        min-height: 81px;
+        width: 36vw;
+        height: 4vh;
+        background: rgba(225, 225, 144, 0.81);
+        border-top: 1px solid rgba(1, 2, 4, 0.16);
+        border-left: 1px solid rgba(1, 2, 4, 0.16);
+        border-right: 1px solid rgba(1, 2, 4, 0.16);
+        border-bottom: 1px dashed rgba(1, 2, 4, 0.16);
+        border-radius: 4px;
+      }
+      div.CardBody {
+        position: relative;
+        min-width: 256px;
+        min-height: 169px;
+        width: 36vw;
+        height: 16vh;
+        background: rgba(225, 225, 144, 0.81);
+        border-left: 1px solid rgba(1, 2, 4, 0.16);
+        border-right: 1px solid rgba(1, 2, 4, 0.16);
+        border-bottom: 1px solid rgba(1, 2, 4, 0.16);
+        border-radius: 4px;
+      }
+      /*  */
+      div#launch_anchor {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0 auto;
+        background-color: rgba(251, 252, 253, 0.81);
+        overflow: hidden;
+      }
+      div.EO {
+        max-width: 81vw;
+      }
+      div.Container {
+        padding: 4vh;
+      }
+      label {
+        width: 256px;
+        height: 81px;
+        border-radius: 16px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(251, 252, 253, 0.81);
+      }
+      label input {
+        position: absolute;
+        appearance: none;
+      }
+      label::before {
+        position: absolute;
+        content: "";
+        border-radius: 4px;
+        width: 256px;
+        height: 4px;
+        background-color: #124;
+        z-index: -1;
+      }
+      div#slider_icon {
+        position: absolute;
+        left: 0;
+        width: 81px;
+        height: 100%;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: rgba(81, 81, 81, 0.81);
+        transition: 1.7777s;
+      }
+      label > input:checked ~ #slider_icon {
+        left: 175px;
+      }
+      #slider_icon::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 9px;
+        height: 100%;
+        background: linear-gradient(
+          rgba(250, 250, 250, 0.64),
+          rgba(251, 251, 251, 0.64),
+          rgba(252, 252, 252, 0.64)
+        );
+        filter: blur(1px);
+      }
+      #slider_icon::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 16px;
+        height: 100%;
+        background: linear-gradient(
+          rgba(252, 252, 252, 0.81),
+          rgba(251, 251, 251, 0.81),
+          rgba(250, 250, 250, 0.81)
+        );
+        filter: blur(1px);
+      }
+      .IconBoxArea {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 1px 2px 4px rgba(1, 2, 4, 0.16),
+          4px 9px 16px rgba(1, 2, 4, 0.16),
+          inset 1px 2px 4px rgba(251, 252, 253, 0.81);
+      }
+      .Shadow {
+        position: absolute;
+        top: 16px;
+        left: 0px;
+        width: 81px;
+        height: 256px;
+        background: linear-gradient(
+          169deg,
+          rgba(1, 2, 4, 0.16),
+          transparent,
+          transparent
+        );
+        transform-origin: top;
+        transform: rotate(16deg);
+        pointer-events: none;
+        z-index: -1;
+      }
+      .IconBoxArea ion-icon {
+        color: rgba(1, 2, 4, 0.16);
+        font-size: 36px;
+        --ionicon-stroke-width: 36px;
+        transition: 1.7777s;
+      }
+      label input:checked ~ #slider_icon .IconBoxArea ion-icon {
+        color: rgba(251, 252, 253, 0.81);
+        filter: drop-shadow(1px 2px 4px, rgba(253, 251, 251, 0.81))
+          drop-shadow(1px 2px 16px, rgba(251, 252, 253, 0.81));
+      }
+    </style>
   </body>
 </html>

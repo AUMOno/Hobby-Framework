@@ -1,5 +1,5 @@
 //// Copyright 2021, Eric Dee - All rights reserved
-//// socket_tcp.c, cacher.c
+//// socket_tcp.c, cache_manager.c, file_manager.c
 ////
 ////
 
@@ -37,6 +37,7 @@ struct FileManager FileManager;
 
 int main()
 {
+    char production = 'n';
 
     /* This turns off stdout/printing buffers */
     setbuf(stdout, NULL);
@@ -97,7 +98,14 @@ int main()
 
     struct sockaddr_in socket_address_block;
     int socket_address_block_length = sizeof(socket_address_block);
-    u_short transport_address = 256; // Port
+    u_short transport_address; // Port
+    if (production == 'n')
+    {
+        transport_address = 256;
+    }
+    else {
+        transport_address = 80;
+    }
 
     memset((char*)&socket_address_block.sin_zero, 0, sizeof socket_address_block.sin_zero); // This pads the entire block with bytes.
     socket_address_block.sin_family = address_family;

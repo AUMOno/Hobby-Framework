@@ -1,3 +1,8 @@
+//// Copyright 2021, Eric Dee - All rights reserved
+//// socket_tcp.c, cache_manager.c, file_manager.c
+////
+////
+
 #ifndef IO_LIBRAIRES_H 
 #include "headers/io_libraries.h"
 #define IO_LIBRAIRES_H
