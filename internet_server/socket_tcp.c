@@ -18,20 +18,14 @@
 
 typedef unsigned int socketlengthint; // If errors check here.
 
-FILE* Global_HTMLIndexFile;
-
-FILE* read_file_path(const char* path, char print);
-void print_file(FILE* file);
 void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres);
-void display_cached_block(char* cachedBlock);
-char* collect_file(FILE* fileToCollect, void* insert, char* cachedHTMLIndex);
-char* collect_file_from_offset(FILE* fileToCollect, char* base_file, int start_point);
 
 char http_protocol_header[] =
                             "HTTP/1.1 200 OK\r\n"
                             "Content-Type: text/html; charset=UTF-8\r\n\r\n";
 #define HTTP_HEADER_LIMITATION sizeof(http_protocol_header)
 
+FILE* Global_HTMLIndexFile;
 struct CacheManager StaticCache;
 struct FileManager FileManager;
 
