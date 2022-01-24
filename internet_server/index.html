@@ -12,6 +12,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hello internet.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Mono&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="launch_anchor">
@@ -58,15 +64,18 @@
         <div class="launch_anchor">
           <div class="CardBody">
             <p>
-              View this server's source code: •
+              View this server's source code:
               <a
                 href="https://github.com/AllComputerScience/internet_server"
                 target="_blank"
                 >Self built internet server</a
               >
             </p>
+
+            <br />
+
             <p>
-              Or checkout all my public repositories: •
+              Or checkout all my public repositories:
               <a
                 href="https://github.com/AllComputerScience?tab=repositories"
                 target="_blank"
@@ -74,6 +83,7 @@
               >
             </p>
           </div>
+
           <div class="CardBody">
             <p>
               Visit the
@@ -81,6 +91,9 @@
                 >The database of symbols</a
               >.
             </p>
+
+            <br />
+
             <p>
               Look at my schoolwork:
               <a
@@ -106,8 +119,15 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        font-family: "Roboto Mono", monospace;
         font-weight: 256;
         color: rgba(1, 2, 4, 0.81);
+      }
+      p {
+        text-align: center;
+      }
+      a {
+        color: rgba(144, 144, 144, 0.81);
       }
       .NoPadding {
         padding: 0 !important;
@@ -125,6 +145,7 @@
         width: 36vw;
         height: 4vh;
         background: rgba(225, 225, 144, 0.81);
+        font-family: "Open Sans", sans-serif;
         border-top: 1px solid rgba(1, 2, 4, 0.16);
         border-left: 1px solid rgba(1, 2, 4, 0.16);
         border-right: 1px solid rgba(1, 2, 4, 0.16);
@@ -143,6 +164,14 @@
         border-bottom: 1px solid rgba(1, 2, 4, 0.16);
         border-radius: 4px;
       }
+      div.CardBody > p,
+      a {
+        font-family: "Open Sans", sans-serif;
+      }
+      div.CardHeader > h2 {
+        font-family: "Open Sans", sans-serif;
+      }
+
       /*  */
       div#launch_anchor {
         display: flex;
