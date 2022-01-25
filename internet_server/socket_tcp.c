@@ -18,7 +18,7 @@
 
 typedef unsigned int socketlengthint; // If errors check here.
 
-void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transport_addres);
+void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transportAddress, SSL_CTX* ctx);
 
 char http_protocol_header[] =
                             "HTTP/1.1 200 OK\r\n"
@@ -32,9 +32,46 @@ struct FileManager FileManager;
 char check_request_verbs(char* cachedBlock);
 char check_prebuilt_paths(int startPoint, char* cachedBlock);
 
+SSL_CTX *create_context()
+{
+    const SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    method = TLS_server_method();
+
+    ctx = SSL_CTX_new(method);
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    return ctx;
+}
+
+void configure_context(SSL_CTX *ctx)
+{
+    /* Set the key and cert */
+    if (SSL_CTX_use_certificate_file(ctx, "/etc/letsencrypt/live/ericdee.me/fullchain.pem", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, "/etc/letsencrypt/live/ericdee.me/privkey.pem", SSL_FILETYPE_PEM) <= 0 ) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main()
 {
-    char production = 'n';
+    //OpenSSL
+    SSL_CTX *ctx;
+    ctx = create_context();
+    configure_context(ctx);
+    //
+
+    char production = 'y';
 
     /* This turns off stdout/printing buffers */
     setbuf(stdout, NULL);
@@ -99,7 +136,7 @@ int main()
         transport_address = 256;
     }
     else {
-        transport_address = 80;
+        transport_address = 443;
     }
 
     memset((char*)&socket_address_block.sin_zero, 0, sizeof socket_address_block.sin_zero); // This pads the entire block with bytes.
@@ -133,7 +170,7 @@ int main()
         This is the end of the setup
 
     */
-    allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_address);
+    allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_address, ctx);
     /*
         This is the end of the software process
 
@@ -143,7 +180,7 @@ int main()
     return 0;
 }
 
-void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transportAddress)
+void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in socketAddressBlock, int socketAddressBlockLength, u_short transportAddress, SSL_CTX* ctx)
 {
 
     char clientIsAllowed = 1;
@@ -151,6 +188,7 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
 
     while (clientIsAllowed == 1)
     {
+        SSL *ssl_client_connection;
 
         printf("This server is looping and waiting for a request on port number %i.\n", transportAddress);
         int client_connection_address = accept(socketFileDescriptor, (struct sockaddr*) &socketAddressBlock, (socketlengthint*) &socketAddressBlockLength);
@@ -165,13 +203,23 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
             exit(EXIT_FAILURE);
         }
 
-        char* request_retainer = generate_an_array_by_limitation(CACHE_LIMITATION, (any)0);
-        read(client_connection_address, request_retainer, CACHE_LIMITATION);
+        ssl_client_connection = SSL_new(ctx);
+        SSL_set_fd(ssl_client_connection, client_connection_address);
+
+        if (SSL_accept(ssl_client_connection) <= 0)
+        {
+            ERR_print_errors_fp(stderr);
+        } 
+
+        char request_retainer[CACHE_LIMITATION] = {0};
+        SSL_read(ssl_client_connection, request_retainer, CACHE_LIMITATION);
         display_cached_block(request_retainer);
-        char expected_file = check_request_verbs(request_retainer);
+
 
         FILE* volatile_response_file;
         char* volatile_response_data = generate_an_array_by_limitation(CACHE_LIMITATION, (any) 0);
+
+        char expected_file = check_request_verbs(request_retainer);
         switch (expected_file)
         {
             case 'w':
@@ -179,23 +227,20 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
                 volatile_response_file = read_file_path("/root/env/internet_server/.well-known/test", 'p');
                 collect_file(volatile_response_file, (any)0, volatile_response_data);
                 display_cached_block(volatile_response_data);
-                send(client_connection_address, volatile_response_data, CACHE_LIMITATION, 0);
-                printf("Sent the response to the client connection.\n\n\n");
+                SSL_write(ssl_client_connection, volatile_response_data, CACHE_LIMITATION);
+                SSL_shutdown(ssl_client_connection);
+                SSL_free(ssl_client_connection);
                 close(client_connection_address);
+                printf("Sent the response to the client connection.\n\n\n");
                 break;
             default:
+                SSL_write(ssl_client_connection, StaticCache.built_cachedHTMLIndexResponse, CACHE_LIMITATION);
+                close(client_connection_address);
+                printf("Sent the response to the client connection.\n\n\n");
                 break;
         }
-
-        // Default view:
-        send(client_connection_address, StaticCache.built_cachedHTMLIndexResponse, CACHE_LIMITATION, 0);
-        printf("Sent the response to the client connection.\n\n\n");
-        close(client_connection_address);
     }
 }
-
-
-
 
 char check_request_verbs(char* cachedBlock)
 {
@@ -219,7 +264,7 @@ char check_request_verbs(char* cachedBlock)
         // putchar(cachedBlock[iteration]);
     }
     putchar('\n');
-    return 'z';
+    return '0';
 }
 
 char check_prebuilt_paths(int startPoint, char* cachedBlock)
@@ -241,7 +286,7 @@ char check_prebuilt_paths(int startPoint, char* cachedBlock)
             }
         }
     }
-    return 'z';
+    return '0';
 }
 
 /* Notes:

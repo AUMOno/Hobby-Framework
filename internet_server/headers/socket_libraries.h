@@ -6,6 +6,9 @@
     #include <sys/socket.h>
     #include <unistd.h>
     #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <openssl/ssl.h>
+    #include <openssl/err.h>
 
 #elif defined(_WIN32)
     typedef unsigned int socketint;
