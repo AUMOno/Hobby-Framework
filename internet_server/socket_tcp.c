@@ -29,6 +29,9 @@ FILE* Global_HTMLIndexFile;
 struct CacheManager StaticCache;
 struct FileManager FileManager;
 
+char check_request_verbs(char* cachedBlock);
+char check_prebuilt_paths(int startPoint, char* cachedBlock);
+
 int main()
 {
     char production = 'n';
@@ -59,13 +62,11 @@ int main()
 
     StaticCache.assign_header_by_limitation(BASE_FILE_LIMITATION, HTTP_HEADER_LIMITATION, http_protocol_header, StaticCache.material_cachedHTTPHeader, (any)0);
     StaticCache.assign_response_by_limitation_offset(CACHE_LIMITATION, BASE_FILE_LIMITATION, StaticCache.material_cachedHTTPHeader, StaticCache.built_cachedHTMLIndexResponse, collect_file(Global_HTMLIndexFile, (any)0, StaticCache.material_cachedHTMLIndex));
-
     /*
 
         End of initialization settings
 
     */
-
     int address_family = AF_INET;
     int type = SOCK_STREAM;
     int protocol = 0;
@@ -128,19 +129,15 @@ int main()
         perror("The server could not listen.\n");
         exit(EXIT_FAILURE);
     }
-
     /*
         This is the end of the setup
 
     */
-
     allow_socket_client(socket_file_descriptor, socket_address_block, socket_address_block_length, transport_address);
-
     /*
         This is the end of the software process
 
     */
-
     printf("This is the end of the socket_tcp.c software process\n");
 
     return 0;
@@ -150,14 +147,12 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
 {
 
     char clientIsAllowed = 1;
-
     printf("Started the allow socket method.\n");
 
     while (clientIsAllowed == 1)
     {
 
         printf("This server is looping and waiting for a request on port number %i.\n", transportAddress);
-
         int client_connection_address = accept(socketFileDescriptor, (struct sockaddr*) &socketAddressBlock, (socketlengthint*) &socketAddressBlockLength);
 
         if (client_connection_address >= 0)
@@ -170,13 +165,83 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
             exit(EXIT_FAILURE);
         }
 
-        char request_retainer[CACHE_LIMITATION] = {0};
+        char* request_retainer = generate_an_array_by_limitation(CACHE_LIMITATION, (any)0);
         read(client_connection_address, request_retainer, CACHE_LIMITATION);
-        printf("%s\n", request_retainer);
+        display_cached_block(request_retainer);
+        char expected_file = check_request_verbs(request_retainer);
+
+        FILE* volatile_response_file;
+        char* volatile_response_data = generate_an_array_by_limitation(CACHE_LIMITATION, (any) 0);
+        switch (expected_file)
+        {
+            case 'w':
+                printf("Got here\n");
+                volatile_response_file = read_file_path("/root/env/internet_server/.well-known/test", 'p');
+                collect_file(volatile_response_file, (any)0, volatile_response_data);
+                display_cached_block(volatile_response_data);
+                send(client_connection_address, volatile_response_data, CACHE_LIMITATION, 0);
+                printf("Sent the response to the client connection.\n\n\n");
+                close(client_connection_address);
+                break;
+            default:
+                break;
+        }
+
+        // Default view:
         send(client_connection_address, StaticCache.built_cachedHTMLIndexResponse, CACHE_LIMITATION, 0);
         printf("Sent the response to the client connection.\n\n\n");
         close(client_connection_address);
     }
+}
+
+
+
+
+char check_request_verbs(char* cachedBlock)
+{
+    for (int iteration = 0; iteration < CACHE_LIMITATION; iteration++)
+    {
+        if (cachedBlock[iteration] == 'G')
+        {
+            if (cachedBlock[iteration+1] == 'E')
+            {
+                if (cachedBlock[iteration+2] == 'T')
+                {
+                    iteration = iteration+2;
+                    printf("Found GET\n");
+                    // The server will reject if not found from here. It won't store anything.
+                    char expected_file = check_prebuilt_paths(iteration, cachedBlock);
+                    // If nothing, remain silent.
+                    return expected_file;
+                }
+            }
+        }
+        // putchar(cachedBlock[iteration]);
+    }
+    putchar('\n');
+    return 'z';
+}
+
+char check_prebuilt_paths(int startPoint, char* cachedBlock)
+{
+    for (int iteration = startPoint; iteration < CACHE_LIMITATION; iteration++)
+    {
+        if (cachedBlock[iteration+1] == 'w')
+        {
+            if (cachedBlock[iteration+2] == 'e')
+            {
+                if (cachedBlock[iteration+3] == 'l')
+                {
+                    if (cachedBlock[iteration+4] == 'l')
+                    {
+                        printf("Found SSL request\n");
+                        return 'w';
+                    }
+                }
+            }
+        }
+    }
+    return 'z';
 }
 
 /* Notes:
