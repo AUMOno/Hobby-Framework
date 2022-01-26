@@ -209,6 +209,7 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
         if (SSL_accept(ssl_client_connection) <= 0)
         {
             ERR_print_errors_fp(stderr);
+            exit(EXIT_FAILURE);
         } 
 
         char request_retainer[CACHE_LIMITATION] = {0};
