@@ -224,7 +224,7 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
         {
             case 'w':
                 printf("Got here\n");
-                volatile_response_file = read_file_path("/root/env/internet_server/.well-known/test", 'p');
+                volatile_response_file = read_file_path("/root/env/internet_server/.well-known/challenge.txt", 'p');
                 collect_file(volatile_response_file, (any)0, volatile_response_data);
                 display_cached_block(volatile_response_data);
                 SSL_write(ssl_client_connection, volatile_response_data, CACHE_LIMITATION);
