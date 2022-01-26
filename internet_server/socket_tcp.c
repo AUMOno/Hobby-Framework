@@ -235,6 +235,8 @@ void allow_socket_client(socketint socketFileDescriptor, struct sockaddr_in sock
                 break;
             default:
                 SSL_write(ssl_client_connection, StaticCache.built_cachedHTMLIndexResponse, CACHE_LIMITATION);
+                SSL_shutdown(ssl_client_connection);
+                SSL_free(ssl_client_connection);
                 close(client_connection_address);
                 printf("Sent the response to the client connection.\n\n\n");
                 break;
